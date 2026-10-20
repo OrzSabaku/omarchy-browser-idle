@@ -1,0 +1,8 @@
+{
+  "source": "https://github.com/omacom/omarchy/tree/master/shell/plugins/services/idle",
+  "sha256": {
+    "IdleModel.js": "4684ae9b2ffa79490cfbeda54d50d9d072a56fcb5ad765303ebfa1beceea7c71",
+    "Service.qml": "f9ec3c2645e28ec83e8c19641a4762e50ec891ecfa90094b15048de20d6bffaa",
+    "manifest.json": "bb8a5f55257dc49c2b7632304dad19aa12bbc7ad641828f09481909232f30a6f"
+  }
+}

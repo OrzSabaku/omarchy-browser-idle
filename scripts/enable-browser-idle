@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Activate only from a reachable desktop session; leave stock idle alone on failure.
+set -euo pipefail
+omarchy-shell shell ping >/dev/null
+omarchy-shell shell rescanPlugins >/dev/null
+found=0
+for ((attempt = 0; attempt < 40; attempt++)); do
+  if omarchy plugin list --json | jq -e 'any(.[]; .id == "dotfiles.idle")' >/dev/null; then
+    found=1
+    break
+  fi
+  sleep 0.05
+done
+if (( ! found )); then
+  echo 'dotfiles.idle was not discovered; the current idle service has not been changed.' >&2
+  exit 1
+fi
+
+# Save the effective source, rather than replacing its symlink during backup.
+config="$HOME/.config/omarchy/shell.json"
+backup="$HOME/.local/state/omarchy-plugins/backups/browser-idle-enable-$(date +%Y%m%d-%H%M%S)"
+mkdir -m 700 -p "$backup"
+cp -L "$config" "$backup/shell.json"
+printf 'Previous shell configuration: %s\n' "$backup/shell.json"
+omarchy plugin enable dotfiles.idle
+for ((attempt = 0; attempt < 50; attempt++)); do
+  if omarchy-shell idle status 2>/dev/null | jq -e 'has("browserMediaPlaying")' >/dev/null; then
+    echo 'Browser playback idle protection is active.'
+    echo 'Check playback detection with: omarchy-shell idle status'
+    exit 0
+  fi
+  sleep 0.1
+done
+# Restore the built-in implementation instead of leaving an unverified clone active.
+echo 'Could not confirm the custom service; restoring the built-in idle service.' >&2
+omarchy plugin enable omarchy.idle >&2
+exit 1
