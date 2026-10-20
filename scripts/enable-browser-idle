@@ -24,7 +24,7 @@ cp -L "$config" "$backup/shell.json"
 printf 'Previous shell configuration: %s\n' "$backup/shell.json"
 omarchy plugin enable dotfiles.idle
 for ((attempt = 0; attempt < 50; attempt++)); do
-  if omarchy-shell idle status 2>/dev/null | jq -e 'has("browserMediaPlaying")' >/dev/null; then
+  if omarchy-shell idle status 2>/dev/null | jq -e '.pluginId == "dotfiles.idle" and .version == "1.0.1" and has("browserMediaPlaying")' >/dev/null; then
     echo 'Browser playback idle protection is active.'
     echo 'Check playback detection with: omarchy-shell idle status'
     exit 0
@@ -32,6 +32,6 @@ for ((attempt = 0; attempt < 50; attempt++)); do
   sleep 0.1
 done
 # Restore the built-in implementation instead of leaving an unverified clone active.
-echo 'Could not confirm the custom service; restoring the built-in idle service.' >&2
+echo 'Could not confirm implementation 1.0.1; restoring stock. After updating, run: omarchy restart shell' >&2
 omarchy plugin enable omarchy.idle >&2
 exit 1

@@ -23,7 +23,13 @@ If already installed, update rather than adding a second copy:
 
 ```sh
 omarchy plugin update dotfiles.idle
+omarchy restart shell
 ```
+
+Both service manifests intentionally use `keepLoaded` to preserve timers and live state during unrelated
+plugin reloads. Updating files or rescanning alone does **not** replace a running service instance.
+Restart Omarchy shell from an unlocked desktop session after an update. Do not restart while the session is locked.
+For dotfiles development, use the same restart step after editing linked plugin code.
 
 The plugin ID is `dotfiles.idle`. The existing ID is retained for compatibility with earlier dotfiles installations.
 This is a clone of `omarchy.idle`; `clonedFrom` metadata lets Omarchy replace the stock service and restore it later.

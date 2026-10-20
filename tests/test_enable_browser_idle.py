@@ -6,7 +6,7 @@ import unittest
 
 
 class EnableBrowserIdleTests(unittest.TestCase):
-    def run_setup(self, reachable=True, confirmed=True):
+    def run_setup(self, reachable=True, confirmed=True, version="1.0.1"):
         repo = Path(__file__).resolve().parents[1]
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -20,7 +20,7 @@ class EnableBrowserIdleTests(unittest.TestCase):
         (tools / 'omarchy-shell').write_text('''#!/bin/sh
 if [ "$TEST_REACHABLE" != 1 ]; then exit 17; fi
 if [ "$1" = idle ]; then
-  if [ "$TEST_CONFIRMED" = 1 ]; then echo '{"browserMediaPlaying":false}'; else echo '{}'; fi
+  if [ "$TEST_CONFIRMED" = 1 ]; then printf '{"pluginId":"dotfiles.idle","version":"%s","browserMediaPlaying":false}\\n' "$TEST_VERSION"; else echo '{}'; fi
 fi
 ''')
         (tools / 'omarchy').write_text('''#!/bin/sh
@@ -32,7 +32,7 @@ if [ "$2" = enable ]; then printf '%s\\n' "$3" >> "$TEST_MARKER"; fi
             file.chmod(0o755)
         env = os.environ.copy()
         env.update(HOME=str(home), PATH=str(tools) + ':' + env['PATH'], TEST_MARKER=str(marker),
-                   TEST_REACHABLE=str(int(reachable)), TEST_CONFIRMED=str(int(confirmed)))
+                   TEST_REACHABLE=str(int(reachable)), TEST_CONFIRMED=str(int(confirmed)), TEST_VERSION=version)
         result = subprocess.run(['bash', str(repo / 'scripts/enable-browser-idle')],
                                 env=env, text=True, capture_output=True, timeout=15)
         calls = marker.read_text().splitlines() if marker.exists() else []
@@ -50,6 +50,11 @@ if [ "$2" = enable ]; then printf '%s\\n' "$3" >> "$TEST_MARKER"; fi
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(calls, ['dotfiles.idle'])
         self.assertEqual(len(list((home / '.local/state/omarchy-plugins/backups').glob('*/shell.json'))), 1)
+
+    def test_old_implementation_is_not_reported_as_updated(self):
+        result, calls, _ = self.run_setup(version="1.0.0")
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(calls, ['dotfiles.idle', 'omarchy.idle'])
 
     def test_failed_activation_restores_stock_service(self):
         result, calls, _ = self.run_setup(confirmed=False)

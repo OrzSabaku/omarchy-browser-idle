@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "dotfiles.idle",
   "name": "Browser media idle protection",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Desert-sabaku",
   "description": "Inhibit screensaver and automatic lock during browser MPRIS playback.",
   "kinds": [

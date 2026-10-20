@@ -14,6 +14,7 @@ Item {
 
   // Injected by omarchy-shell (the first-party service loader).
   property var shell: null
+  readonly property string implementationVersion: "1.0.1"
 
   readonly property string home: Quickshell.env("HOME")
   readonly property string stayAwakeStateDir: home + "/.local/state/omarchy/indicators"
@@ -241,6 +242,8 @@ Item {
 
   function statusJson() {
     return JSON.stringify({
+      pluginId: "dotfiles.idle",
+      version: root.implementationVersion,
       enabled: root.idleEnabled,
       browserMediaPlaying: root.browserMediaPlaying,
       browserResumeGrace: browserResumeTimer.running,
